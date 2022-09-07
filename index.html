@@ -4,13 +4,13 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="stylesheet" href="styles.css">
-  <title>MIDI to M300</title>
+  <title>MIDI to Arduino</title>
 </head>
 
 <body>
   <script src="https://unpkg.com/@tonejs/midi"></script>
   <script type="text/javascript" src="https://unpkg.com/tone@13.4.9/build/Tone.js"></script>
-  <h1>MIDI to M300 Converter</h1>
+  <h1>MIDI to Arduino Converter</h1>
   <div>
     <input type="file" id="filereader" />
     <div id="trackInfo"></div>
@@ -130,6 +130,7 @@
 
       let curr = 0;
       const gcode = [];
+      gcode.push("void setup() {\n  // put your setup code here, to run once:\n  pinMode(11, OUTPUT);\n}\n\nvoid loop() {\n");
       while (curr < track.notes.length) {
         // Keep the highest non-percussion note if multiple occur at the same time
         let highestCurrNote = track.notes[curr].percussion ? -1 : track.notes[curr].midi;
@@ -170,7 +171,7 @@
         }
         // Write an M300 to play a note with the calculated pitch and duration
         gcode.push(
-          `  tone(${Math.round(frequency)}, ${Math.round(trimmedDuration * 1000 * tempoMultiplier)});\n  delay(${Math.round(trimmedDuration * 1000 * tempoMultiplier)});`
+          `  tone(11, ${Math.round(frequency)}, ${Math.round(trimmedDuration * 1000 * tempoMultiplier)});\n  delay(${Math.round(trimmedDuration * 1000 * tempoMultiplier)});\n`
         );
 
         // Duet firmware needs G4 pauses between notes
@@ -199,7 +200,7 @@
 
         curr++;
       }
-
+      gcode.push("}");
       const output = gcode.reduce((acc, e) => acc + e, "");
       document.getElementById("outputArea").value = output;
     }
